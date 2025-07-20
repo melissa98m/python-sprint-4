@@ -4,7 +4,7 @@ class Article(models.Model):
     """
     Modèle pour représenter un article.
     """
-    title = models.CharField(max_length=255)  # Titre limité à 255 caractères
+    title = models.CharField(max_length=255, unique=True)  # Titre limité à 255 caractères
     content = models.TextField()             # Contenu sans limite de taille
     author = models.CharField(max_length=50 , default="melissa")
     created_at = models.DateTimeField(auto_now_add=True)  # Ajout automatique de la date de création
