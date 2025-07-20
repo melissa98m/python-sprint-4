@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import Article
@@ -57,15 +58,6 @@ def get_user(request, username):
 
 
 @api_view(['GET'])
-def list_articles(request):
-    """
-    Vue pour retourner tous les articles en JSON.
-    """
-    articles = Article.objects.all()  # Récupère tous les articles
-    serializer = ArticleSerializer(articles, many=True)  # Sérialise la liste
-    return Response(serializer.data)  # Retourne les données JSON
-
-@api_view(['GET'])
 def search_articles(request):
     """
     Vue pour rechercher des articles par titre.
@@ -82,6 +74,64 @@ def search_articles(request):
 
     serializer = ArticleSerializer(articles, many=True)
     return Response(serializer.data)
+
+@api_view(['GET', 'POST'])
+def article_list_create(request):
+    """
+    Gérer la liste des articles (GET) et la création d'un article (POST).
+    Le GET permet de filtrer les articles par titre.
+    """
+    if request.method == 'GET':
+        # Récupère tous les articles par défaut
+        articles = Article.objects.all()
+
+        # Récupérer le paramètre 'title' de l'URL (ex: /api/articles/?title=Django)
+        title_query = request.query_params.get('title', None)
+        if title_query is not None:
+            # Filtrer le queryset si le paramètre 'title' est fourni
+            # '__icontains' permet une recherche insensible à la casse et partielle
+            articles = articles.filter(title__icontains=title_query)
+
+        serializer = ArticleSerializer(articles, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        # (Aucun changement dans la partie POST)
+        serializer = ArticleSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def article_detail_update_delete(request, id):
+    """
+    Gérer un article spécifique (GET, PUT, DELETE).
+    """
+    try:
+        article = Article.objects.get(pk=id)  # Récupérer l'article avec l'ID donné
+    except Article.DoesNotExist:
+        return Response({'error': 'Article not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        # Lire un article spécifique
+        serializer = ArticleSerializer(article)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        # Mettre à jour un article
+        serializer = ArticleSerializer(article, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        # Supprimer un article
+        article.delete()
+        return Response({'message': 'Article deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
 
 @api_view(['GET'])
 def list_categories(request):
