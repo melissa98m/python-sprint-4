@@ -25,6 +25,19 @@ class ArticleSerializer(serializers.ModelSerializer):
         if not value.strip():
             raise serializers.ValidationError("Le contenu ne peut pas être vide.")
         return value
+
+    def validate(self, data):
+        """
+        Vérifie que le titre commence par '[Urgent]' si le contenu mentionne 'urgent'.
+        """
+        content_lower = data['content'].lower()
+        title = data['title']
+        if "urgent" in content_lower and not title.startswith("[Urgent]"):
+            raise serializers.ValidationError(
+                "Si le contenu contient 'urgent', le titre doit commencer par '[Urgent]'."
+            )
+        return data
+        
 class CategorySerializer(serializers.ModelSerializer):
     """
     Sérialiseur pour convertir les objets Category en JSON.
