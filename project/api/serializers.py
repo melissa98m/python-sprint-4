@@ -20,10 +20,21 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     def validate_content(self, value):
         """
-        Vérifie que le contenu n'est pas vide ou composé uniquement d'espaces.
+        Vérifie plusieurs règles pour le champ content :
+        1. Ne doit pas être vide.
+        2. Ne doit pas contenir de mots interdits.
         """
+        # Vérifier que le contenu n'est pas vide
         if not value.strip():
             raise serializers.ValidationError("Le contenu ne peut pas être vide.")
+
+        # Vérifier les mots interdits
+        forbidden_words = ["spam", "fake"]
+        for word in forbidden_words:
+            if word in value.lower(): # .lower() pour une recherche insensible à la casse
+                raise serializers.ValidationError(
+                    f"Le mot '{word}' est interdit dans le contenu."
+                )
         return value
 
     def validate(self, data):
@@ -37,7 +48,7 @@ class ArticleSerializer(serializers.ModelSerializer):
                 "Si le contenu contient 'urgent', le titre doit commencer par '[Urgent]'."
             )
         return data
-        
+
 class CategorySerializer(serializers.ModelSerializer):
     """
     Sérialiseur pour convertir les objets Category en JSON.
