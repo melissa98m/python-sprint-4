@@ -1,4 +1,4 @@
-# 🐍 Projet Django (v3.9) — Docker Ready
+# 🐍 Projet Django (v5.2) — Docker Ready
 
 Ce dépôt contient un projet Django configuré pour tourner dans un environnement Docker. Il inclut un service web exposé sur le port 8000, avec persistance des données via un volume Docker.
 
@@ -18,11 +18,14 @@ Ce dépôt contient un projet Django configuré pour tourner dans un environneme
    ```bash
    git clone <url-du-repo>
    cd <nom-du-repo>
+   ```
 
 Lance les services Docker :
 
-  ```bash
-    docker compose up --build
+   ```bash
+   docker compose up --build
+   ```
+
 
 Accède à l'application :
 👉 http://0.0.0.0:8000
@@ -31,21 +34,20 @@ Accède à l'application :
 Ce projet utilise SQLite avec le fichier de base de données stocké dans un volume Docker (db-data), ce qui garantit la persistance même après l'arrêt du conteneur.
 
 📂 Chemin du fichier SQLite
-python
-Copier
-Modifier
+
+```python
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db/db.sqlite3'
     }
 }
+```
 Le dossier db/ est monté dans un volume Docker via cette ligne dans docker-compose.yml :
 
-yaml
-Copier
-Modifier
+```yaml
 - db-data:/app/db
+```
 Ce volume persiste la base de données en dehors du conteneur, dans un volume nommé db-data.
 
 
@@ -53,28 +55,34 @@ Ce volume persiste la base de données en dehors du conteneur, dans un volume no
 Toutes les commandes suivantes s'exécutent dans le conteneur web.
 
 🔁 Appliquer les migrations
-bash
+```bash
 
 docker compose exec web python manage.py migrate
+```
 🏗️ Créer les fichiers de migration
-bash
+```bash
 docker compose exec web python manage.py makemigrations
+```
 👤 Créer un superutilisateur
-bash
+```bash
 
 docker compose exec web python manage.py createsuperuser
+```
 🐚 Accéder au shell Django
-bash
+```bash
 
 docker compose exec web python manage.py shell
+```
 🧪 Lancer les tests (si définis)
-bash
+```bash
 
 docker compose exec web python manage.py test
+```
 🔄 Rebuilder le conteneur
-bash
+```bash
 
 docker compose up --build
+```
 
 🛠️ Développement
 Les fichiers de l’application sont montés directement dans le conteneur (.:/app). Toute modification de code est donc prise en compte instantanément, sans besoin de reconstruire l’image.
@@ -83,7 +91,9 @@ Le fichier de base de données SQLite est stocké dans le volume db-data, ce qui
 
 
 📚 Documentation Django
-Django Project
 
-Django Docs
+[Django Project](https://www.djangoproject.com/)
+[Django Doc](https://docs.djangoproject.com/en/5.2/)
+
+
 
