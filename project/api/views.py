@@ -3,7 +3,8 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.filters import OrderingFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import Article
 from .serializers import ArticleSerializer
 from .models import Category 
@@ -20,9 +21,11 @@ class ArticleListCreateView(ListCreateAPIView):
     """
     serializer_class = ArticleSerializer
     pagination_class = CustomPagination
-    filter_backends = [OrderingFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering_fields = ['title', 'created_at']
     ordering = ['created_at']
+    search_fields = ['title', 'content']
+    
 
     def get_queryset(self):
         queryset = Article.objects.all()
