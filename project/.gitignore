@@ -58,3 +58,4 @@ node_modules/
 # Fichiers de build (si usage de webpack ou autre)
 dist/
 build/
+env/
