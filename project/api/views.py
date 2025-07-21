@@ -3,12 +3,21 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework.generics import ListAPIView
 from .models import Article
 from .serializers import ArticleSerializer
 from .models import Category 
 from .serializers import CategorySerializer 
+from .pagination import CustomPagination
 
 
+class ArticleListView(ListAPIView):
+    """
+    Vue pour lister les articles avec une pagination personnalisée.
+    """
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+    pagination_class = CustomPagination
 
 def hello_world(request):
     return JsonResponse({"message": "Bienvenue dans votre API Django REST"})
@@ -141,3 +150,5 @@ def list_categories(request):
     categories = Category.objects.all()
     serializer = CategorySerializer(categories, many=True)
     return Response(serializer.data)
+
+
