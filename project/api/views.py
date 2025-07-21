@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework.generics import ListAPIView
+from rest_framework.filters import OrderingFilter
 from .models import Article
 from .serializers import ArticleSerializer
 from .models import Category 
@@ -11,14 +11,27 @@ from .serializers import CategorySerializer
 from .pagination import CustomPagination
 
 
-class ArticleListView(ListAPIView):
+from rest_framework.generics import ListCreateAPIView
+
+class ArticleListCreateView(ListCreateAPIView):
     """
-    Vue pour lister les articles avec une pagination personnalisée.
+    Vue combinée pour lister (avec pagination, tri et filtre par titre)
+    et créer des articles.
     """
-    queryset = Article.objects.all()
     serializer_class = ArticleSerializer
     pagination_class = CustomPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = ['title', 'created_at']
+    ordering = ['created_at']
 
+    def get_queryset(self):
+        queryset = Article.objects.all()
+        title_query = self.request.query_params.get('title')
+        if title_query:
+            queryset = queryset.filter(title__icontains=title_query)
+        return queryset
+
+    
 def hello_world(request):
     return JsonResponse({"message": "Bienvenue dans votre API Django REST"})
 
@@ -83,34 +96,6 @@ def search_articles(request):
 
     serializer = ArticleSerializer(articles, many=True)
     return Response(serializer.data)
-
-@api_view(['GET', 'POST'])
-def article_list_create(request):
-    """
-    Gérer la liste des articles (GET) et la création d'un article (POST).
-    Le GET permet de filtrer les articles par titre.
-    """
-    if request.method == 'GET':
-        # Récupère tous les articles par défaut
-        articles = Article.objects.all()
-
-        # Récupérer le paramètre 'title' de l'URL (ex: /api/articles/?title=Django)
-        title_query = request.query_params.get('title', None)
-        if title_query is not None:
-            # Filtrer le queryset si le paramètre 'title' est fourni
-            # '__icontains' permet une recherche insensible à la casse et partielle
-            articles = articles.filter(title__icontains=title_query)
-
-        serializer = ArticleSerializer(articles, many=True)
-        return Response(serializer.data)
-
-    elif request.method == 'POST':
-        # (Aucun changement dans la partie POST)
-        serializer = ArticleSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
